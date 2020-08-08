@@ -59,3 +59,47 @@
   - 微信开放平台：`weixin-java-open`   
   - 公众号：`weixin-java-mp`    
   - 企业号/企业微信：`weixin-java-cp`
+  
+  
+  
+  package me.chanjar.weixin.cp.demo;
+
+import me.chanjar.weixin.common.session.WxSessionManager;
+import me.chanjar.weixin.cp.api.WxCpService;
+import me.chanjar.weixin.cp.api.impl.WxCpServiceImpl;
+import me.chanjar.weixin.cp.bean.WxCpXmlMessage;
+import me.chanjar.weixin.cp.bean.WxCpXmlOutMessage;
+import me.chanjar.weixin.cp.bean.WxCpXmlOutTextMessage;
+import me.chanjar.weixin.cp.config.WxCpConfigStorage;
+import me.chanjar.weixin.cp.message.WxCpMessageHandler;
+import me.chanjar.weixin.cp.message.WxCpMessageRouter;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
+public class WxCpDemoServer {
+
+  private static WxCpConfigStorage wxCpConfigStorage;
+  private static WxCpService wxCpService;
+  private static WxCpMessageRouter wxCpMessageRouter;
+
+  public static void main(String[] args) throws Exception {
+    initWeixin();
+
+    Server server = new Server(8080);
+
+    ServletHandler servletHandler = new ServletHandler();
+    server.setHandler(servletHandler);
+
+    ServletHolder endpointServletHolder = new ServletHolder(new WxCpEndpointServlet(wxCpConfigStorage, wxCpService, wxCpMessageRouter));
+    servletHandler.addServletWithMapping(endpointServletHolder, "/*");
+
+    ServletHolder oauthServletHolder = new ServletHolder(new WxCpOAuth2Servlet(wxCpService));
+    servletHandler.addServletWithMapping(oauthServletHolder, "/oauth2/*");
+
+
+
